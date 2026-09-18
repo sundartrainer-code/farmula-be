@@ -1,0 +1,16 @@
+{
+  "backend": {
+    "source_commit": "2763bc4be9de143429963a32774dda255898a805",
+    "prepared_commit": "2278c6f5d5a0aabaff0cf59c663a0edd4a9021b7",
+    "destination": "https://github.com/sundartrainer-code/farmula-be.git",
+    "prepared_path": "/var/folders/4y/rqdqzb017vgbfn2fdc5pvzxm0000gn/T/farmula-migration-b28wzk08/backend",
+    "source_tree_matches": true
+  },
+  "frontend": {
+    "source_commit": "780553d5110ed528c08c2cf39a4088bded10b87e",
+    "prepared_commit": "a1c565d7c1e771f556cc7883e9158bb17067eda2",
+    "destination": "https://github.com/sundartrainer-code/farmula-fe.git",
+    "prepared_path": "/var/folders/4y/rqdqzb017vgbfn2fdc5pvzxm0000gn/T/farmula-migration-b28wzk08/frontend",
+    "source_tree_matches": true
+  }
+}

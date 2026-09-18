@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(uuid())
+  firebaseUid   String         @unique @map("firebase_uid")
+  email         String         @unique
+  displayName   String?        @map("display_name")
+  photoURL      String?        @map("photo_url")
+  role          String         @default("student")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  subscriptions Subscription[]
+  payments      Payment[]
+  progress      Progress[]
+
+  @@map("users")
+}
+
+model SubscriptionPlan {
+  id             String         @id @default(uuid())
+  name           String
+  durationMonths Int            @map("duration_months")
+  price          Int
+  isActive       Boolean        @default(true) @map("is_active")
+  subscriptions  Subscription[]
+
+  @@map("subscription_plans")
+}
+
+model Subscription {
+  id              String           @id @default(uuid())
+  userId          String           @map("user_id")
+  planId          String           @map("plan_id")
+  status          String           @default("active")
+  purchaseDate    DateTime         @default(now()) @map("purchase_date")
+  startDate       DateTime         @map("start_date")
+  expiryDate      DateTime         @map("expiry_date")
+  paymentProvider String           @map("payment_provider")
+  paymentId       String           @map("payment_id")
+  amountPaid      Int              @map("amount_paid")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan            SubscriptionPlan @relation(fields: [planId], references: [id])
+  payments        Payment[]
+
+  @@index([userId])
+  @@index([planId])
+  @@map("subscriptions")
+}
+
+model Payment {
+  id              String       @id @default(uuid())
+  userId          String       @map("user_id")
+  subscriptionId  String       @map("subscription_id")
+  transactionId   String       @map("transaction_id")
+  paymentProvider String       @map("payment_provider")
+  amount          Int
+  currency        String       @default("INR")
+  status          String       @default("paid")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription    Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@unique([transactionId, paymentProvider])
+  @@index([userId])
+  @@index([subscriptionId])
+  @@map("payments")
+}
+
+model Course {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  thumbnail   String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  lessons     Lesson[]
+  driveVideos CourseVideo[]
+
+  @@map("courses")
+}
+
+model CourseVideo {
+  id                String   @id @default(uuid())
+  courseId          String   @map("course_id")
+  googleDriveFileId String   @unique @map("google_drive_file_id")
+  filename          String
+  mimeType          String   @map("mime_type")
+  size              BigInt
+  uploadedAt        DateTime @default(now()) @map("uploaded_at")
+  course            Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+  @@map("course_videos")
+}
+
+model Lesson {
+  id                String     @id @default(uuid())
+  courseId          String     @map("course_id")
+  title             String
+  slug              String     @unique
+  googleDriveFileId String?    @unique @map("google_drive_file_id")
+  videoProvider     String     @default("google_drive") @map("video_provider")
+  youtubeVideoId    String?    @map("youtube_video_id")
+  sortOrder         Int        @default(0) @map("sort_order")
+  lessonNumber      Int?       @map("lesson_number")
+  isIntroduction    Boolean    @default(false) @map("is_introduction")
+  thumbnailUrl      String?    @map("thumbnail")
+  durationSeconds   Int        @default(0) @map("duration")
+  durationFormatted String?    @map("duration_formatted")
+  published         Boolean    @default(true)
+  isDeleted         Boolean    @default(false) @map("is_deleted")
+  deletedAt         DateTime?  @map("deleted_at")
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
+  course            Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progress          Progress[]
+
+  @@index([courseId])
+  @@index([courseId, sortOrder])
+  @@map("lessons")
+}
+
+model Progress {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  lessonId    String   @map("lesson_id")
+  currentTime Int      @default(0) @map("current_time")
+  completed   Boolean  @default(false)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@index([lessonId])
+  @@map("progress")
+}
